@@ -15,3 +15,5 @@ import views
 
 app.register_blueprint(admin)
 app.register_blueprint(user)
+
+app.run()
