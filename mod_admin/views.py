@@ -1,4 +1,5 @@
 from flask import session
+
 from . import admin
 
 
@@ -9,7 +10,7 @@ def index():
 
 @admin.route('/login/')
 def login():
-    session['name']='Davood'
+    session['name'] = 'Davood'
     # session.clear()
     # print(session.get('name'))
     print(session)
