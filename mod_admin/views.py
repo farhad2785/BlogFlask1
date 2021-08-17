@@ -35,4 +35,4 @@ def login():
     # session.clear()
     # print(session.get('name'))
     # print(session)
-    return render_template('admin/login.html', form = form)
+    return render_template('admin/login.html', form = form) # ,title = 'Admin Login'
