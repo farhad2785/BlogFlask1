@@ -1,4 +1,4 @@
-from flask import session, render_template, request, abort
+from flask import session, render_template, request, abort, flash
 from mod_users.forms import LoginForm
 from mod_users.models import User
 from . import admin
@@ -20,9 +20,11 @@ def login():
         # user = User.query.filter(User.email.ilike(f'{form.email.data}')).first()
         # print(user)
         if not user:
-            return 'Incorrect Email', 400
+            flash('Incorrect Email', category='Error')
+            return render_template('admin/login.html', form = form) # ,title = 'Admin Login'
         if not user.check_password(form.password.data):
-            return 'Incorrect Password', 400
+            flash('Incorrect Password', category='Warning')
+            return render_template('admin/login.html', form = form) # ,title = 'Admin Login'
         session['email'] = user.email
         session['user_id'] = user.id
         # print(session)
