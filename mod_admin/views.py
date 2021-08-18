@@ -1,6 +1,12 @@
-from flask import session, render_template, request, abort, flash
+from app import db
+from flask import (abort, flash, redirect, render_template, request, session,
+                   url_for)
+from sqlalchemy.exc import IntegrityError
+from mod_blog.forms import CreatePostForm
+from mod_blog.models import Post
 from mod_users.forms import LoginForm
 from mod_users.models import User
+
 from . import admin
 from .utils import admin_only_view
 
@@ -8,7 +14,7 @@ from .utils import admin_only_view
 @admin.route('/')
 @admin_only_view
 def index():
-    return "Hello from Admin index!"
+    return render_template('admin/index.html')
 
 
 @admin.route('/login/', methods = ['GET' , 'POST'])
@@ -34,9 +40,9 @@ def login():
         session['user_id'] = user.id
         session['role'] = user.role
         # print(session)
-        return 'Login Successfully!'
+        return redirect(url_for('admin.index'))
     if session.get('role') == 1:
-        return 'You are already logged in!'
+        return redirect(url_for('admin.index'))
 
 
     # session['name'] = 'Davood'
@@ -44,3 +50,33 @@ def login():
     # print(session.get('name'))
     # print(session)
     return render_template('admin/login.html', form = form) # ,title = 'Admin Login'
+
+@admin.route('/logout/', methods = ['GET'])
+@admin_only_view
+def logout():
+    session.clear()
+    flash('You logged out successfuly!','Warning')
+    return redirect(url_for('admin.login'))
+
+@admin.route('/posts/new', methods = ['GET' , 'POST'])
+@admin_only_view
+def create_post():
+    form = CreatePostForm(request.form)
+    if request.method == 'POST':
+        if not form.validate_on_submit():
+            return 'not validate'
+        new_post = Post()
+        new_post.title = form.title.data
+        new_post.content = form.content.data
+        new_post.slug = form.slug.data
+        new_post.summary = form.summary.data
+        try:
+            db.session.add(new_post)
+            db.session.commit()
+            flash('Post created!')
+            return redirect(url_for('admin.index'))
+        # except Exception as e:
+        except IntegrityError:
+            db.session.rollback()
+
+    return render_template('admin/create_post.html', form = form)
